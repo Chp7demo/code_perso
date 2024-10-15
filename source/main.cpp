@@ -19,8 +19,17 @@ using namespace std;
  **/
 typedef vector<string> gridMatr; 
 
+struct mPos{
+int x;
+int y;
+mPos()=default;
+mPos(int _x, int _y) : x{_x},y{_y}{};
+};
+
 class Node
 {
+
+    mPos pos;
     int power;
     int nb_bridge;
     int v_up, v_down, v_left, v_right; // index des voisins -1 si pas de voisins
@@ -45,7 +54,8 @@ class Node
 
 class grid
 {
-vector<Node> all_nodes; 
+//vector<Node> all_nodes; // todo, a changer, associer une position ?
+map<mPos,Node> all_nodes;
 map<int,int> bridge_map;
 
 public:
@@ -58,21 +68,31 @@ grid(gridMatr gm);
 grid::grid(gridMatr gm)
 {
  // liste des nodes   
+ // todo associer une position au nodes
+    int cpt_ligne=0;
     for(auto ligne:gm)
     {
+        cpt_ligne++;
+        int cpt_col=0;
         for(auto col:ligne){
+            cpt_col++;
             if(col!='.'){
                 Node new_node;
                 string col_s;
-                col_s+=col;
+                col_s=col;
                 int power=std::stoi(col_s);
-                new_node.set_power(power);
-                all_nodes.push_back(new_node);
+                new_node.set_power(power);             
+                mPos pos(cpt_ligne,cpt_col);
+                all_nodes[pos]=new_node;
                 }
             }
     }
 
  // parcourir la liste des node pour attribuer les voisins   
+
+
+
+
 }
 
 
