@@ -32,23 +32,25 @@ class Node
     mPos pos;
     int power;
     int nb_bridge;
-    int v_up, v_down, v_left, v_right; // index des voisins -1 si pas de voisins
+    mPos v_up, v_down, v_left, v_right; // index des voisins -1 si pas de voisins
 
 
     public:
+    mPos get_pos(){return pos;}
     void set_power(int _power){power=_power;}
     int get_power(){return power;}
     
-    int get_v_up(){return v_up;}
-    int get_v_down(){return v_down;}
-    int get_v_left(){return v_left;}
-    int get_v_right(){return v_right;}
+    mPos get_v_up(){return v_up;}
+    mPos get_v_down(){return v_down;}
+    mPos get_v_left(){return v_left;}
+    mPos get_v_right(){return v_right;}
     
     
-    int set_v_up(int _v_up){v_up=_v_up;}
-    int set_v_down(int _v_down){v_down=_v_down;}
-    int set_v_left(int _v_left){v_left=_v_left;}
-    int set_v_right(int _v_rigth){v_right=v_right;}
+    void set_v_up(mPos _v_up){v_up=_v_up;}
+    void set_v_down(mPos _v_down){v_down=_v_down;}
+    void set_v_left(mPos _v_left){v_left=_v_left;}
+    void set_v_right(mPos _v_rigth){v_right=v_right;}
+    
     
 };
 
@@ -62,8 +64,22 @@ public:
 
 grid(gridMatr gm);
 
+map<mPos,Node>* nodes_ptr(){return &all_nodes;}
+
 };
 
+void print_nodes(map<mPos,Node>* node_map,ofstream& stream_sortie)
+{
+for(auto it=node_map->begin();it==node_map->end();it++)
+{
+    stream_sortie << it->first.x <<' ' << it->first.x << endl;
+    stream_sortie << '\t'<< "up :" << node_map->at(it->second.get_v_up()).get_power();
+    stream_sortie << '\t'<< "left :" << node_map->at(it->second.get_v_left()).get_power();
+    stream_sortie << '\t'<< "right :" << node_map->at(it->second.get_v_right()).get_power();
+    stream_sortie << '\t'<< "down :" << node_map->at(it->second.get_v_down()).get_power();
+    stream_sortie <<endl <<endl;
+}
+};
 
 grid::grid(gridMatr gm)
 {
@@ -88,10 +104,49 @@ grid::grid(gridMatr gm)
             }
     }
 
- // parcourir la liste des node pour attribuer les voisins   
+ // parcourir la liste des nodes pour attribuer les voisins  left et right 
+cpt_ligne=0;
+ for(auto ligne:gm)
+    {
+        cpt_ligne++;
+        bool first_node=true;
+        int cpt_col=0;
+        for(auto col:ligne){
+            cpt_col++;
+            mPos pos(cpt_ligne,cpt_col);
+            Node stock_node;
+            if(col!='.'){
+                stock_node=all_nodes[pos];
+                if(first_node) {first_node=false;}
+                else{
+                    all_nodes[pos].set_v_left(stock_node.get_pos());
+                    stock_node.set_v_right(pos);
+                }
+                }
+            }
+    }
 
-
-
+ // parcourir la liste des nodes pour attribuer les voisins  up  et down 
+int cpt_colonne=0;
+ for(auto colonne:gm)
+    {
+        cpt_colonne++;
+        bool first_node=true;
+        int cpt_li=0;
+        for(auto li:colonne){
+            cpt_li++;
+            mPos pos(cpt_li,cpt_colonne);
+            Node stock_node;
+            if(li!='.'){
+                stock_node=all_nodes[pos];
+                if(first_node) {first_node=false;}
+                else{
+                    all_nodes[pos].set_v_up(stock_node.get_pos());
+                    stock_node.set_v_down(pos);
+                }
+                }
+            }
+    }
 
 }
 
@@ -122,6 +177,16 @@ int main(int argc, char * argv[])
 
     //verif matrice
     for(auto el: gm) cout <<el<< endl;
+
+
+    //string out_file_name="fichier_check_nodes";
+    ofstream of_str_check_nodes;
+    of_str_check_nodes.open("fichier_check_nodes");
+
+
+    grid grid_1(gm);
+
+    print_nodes(grid_1.nodes_ptr(),of_str_check_nodes);
 
 
 
