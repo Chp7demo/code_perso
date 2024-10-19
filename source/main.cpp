@@ -6,6 +6,7 @@
 
 #include <fstream>
 #include <map>
+#include <list>
 #include <unordered_map>
 #include <string>
 
@@ -84,32 +85,50 @@ class Node
     
 };
 
+class Bridge{
+
+Node* ptr_node1;
+Node* ptr_node2;
+
+int power=0; //  1 ou 2 ponts
+
+public:
+
+Bridge(Node* node_1,Node* node_2) : ptr_node1{node_1},ptr_node2{node_2}{
+ptr_node1->set_power((ptr_node1->get_power())-1);
+ptr_node2->set_power((ptr_node2->get_power())-1);
+power++;
+};
+
+int get_power(){return power;}
+void set_power(int _power){power=_power;}
+
+
+
+};
+
 class grid
 {
 //vector<Node> all_nodes; // todo, a changer, associer une position ?
 vector<Node> all_nodes;
 map<int,int> bridge_map;
+gridMatr grid_picture;
+list<Bridge> bridge_list;
 
 public:
 
 grid(gridMatr gm);
-
+gridMatr get_gpicture(){return grid_picture;} // penser à allerger, avec string_view par exemple
+bool make_bridge(int, int);
 vector<Node>* nodes_ptr(){return &all_nodes;}
 
 };
 
+
+
 void print_nodes(vector<Node>* all_nodes,ofstream& stream_sortie)
 {
-/*    
-for(auto it=node_map->begin();it!=node_map->end();it++)
-{
-    stream_sortie << it->first.x <<' ' << it->first.y << endl;
-    stream_sortie << '\t'<< "up :" << (*node_map)[it->second.get_v_up()].get_power() << endl;
-    stream_sortie << '\t'<< "left :" << (*node_map)[it->second.get_v_left()].get_power() << endl;
-    stream_sortie << '\t'<< "right :" << (*node_map)[it->second.get_v_right()].get_power() << endl;
-    stream_sortie << '\t'<< "down :" << (*node_map)[it->second.get_v_down()].get_power() << endl;
-    stream_sortie <<endl <<endl;
-}*/
+
 for(auto el: *all_nodes)
 {
     // cout<<"printing nodes"<<endl;
@@ -200,24 +219,35 @@ cout<<"passe ici"<<endl;
 
         }
 
-        /*bool first_node=true;
-        int cpt=0;
-        for(int ind_li=0;ind_li<N_ligne;ind_li++){  
-            
-            
-            if(gm.at(ind_li).at(col)!='.'){
-
-
-                if(first_node) {first_node=false;}
-                else{
-                    all_nodes.at(vect_col.at(cpt)).set_v_up(vect_col.at(cpt-1));
-                    all_nodes.at(vect_col.at(cpt-1)).set_v_down(vect_col.at(cpt));
-                }
-                cpt++;
-                }
-            }*/
+        
     }
-cout<<"pass la "<<endl;
+
+//remplir grid picture 
+for(int l=0;l<N_ligne;l++)
+{
+    string ligne_gpicture;
+    for(int c=0;c<N_col;c++)
+    {
+        ligne_gpicture+=gm.at(l).at(c);
+        ligne_gpicture+='.';
+    }
+    grid_picture.push_back(ligne_gpicture);
+}
+
+
+}
+
+bool grid::make_bridge(int a,int b){
+
+//todo//ici verifier qu'il n'y pas de pont sur le passage
+bridge_map.insert({a,b});// utile?
+bridge_map.insert({b,a});// utile?
+Bridge new_bridge(&all_nodes.at(a),&all_nodes.at(b));
+bridge_list.push_back(new_bridge);
+
+return true;//prov
+
+
 }
 
 
@@ -246,7 +276,9 @@ int main(int argc, char * argv[])
     while(getline(inputFile,lignefich)){gm.push_back(lignefich);} 
 
     //verif matrice
+    cout<<"matrice initiale"<<endl;
     for(auto el: gm) cout <<el<< endl;
+    
 
 
     //string out_file_name="fichier_check_nodes";
@@ -255,6 +287,11 @@ int main(int argc, char * argv[])
 
 
     grid grid_1(gm);
+
+    cout<<endl;
+    cout<<"matrice picture"<<endl;
+     for(auto el: grid_1.get_gpicture()) cout <<el<< endl;
+
 
     print_nodes(grid_1.nodes_ptr(),of_str_check_nodes);
 
