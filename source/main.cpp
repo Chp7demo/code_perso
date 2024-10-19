@@ -6,6 +6,7 @@
 
 #include <fstream>
 #include <map>
+#include <unordered_map>
 #include <string>
 
 #include <stdio.h>
@@ -20,11 +21,35 @@ using namespace std;
 typedef vector<string> gridMatr; 
 
 struct mPos{
-int x;
-int y;
+int x=-1;
+int y=-1;
 mPos()=default;
 mPos(int _x, int _y) : x{_x},y{_y}{};
+
+//bool pos_compare(const mPos&,const mPos&){};
 };
+
+
+
+
+struct cmp_pos{
+    bool operator()(const mPos& mp_1, const mPos& mp_2) const {
+       if(mp_1.x <= mp_2.x && mp_1.y < mp_2.y) return true;
+    if(mp_1.x >= mp_2.x && mp_1.y > mp_2.y) return false;
+    if(mp_1.x <= mp_2.x && mp_1.y > mp_2.y) return true;
+    if(mp_1.x >= mp_2.x && mp_1.y < mp_2.y) return false;
+    return false;
+    }
+};
+
+/*bool mPos::pos_compare(const mPos& mp_1, const mPos& mp_2)
+{
+    if(mp_1.x <= mp_2.x && mp_1.y < mp_2.y) return true;
+    if(mp_1.x >= mp_2.x && mp_1.y > mp_2.y) return false;
+    if(mp_1.x <= mp_2.x && mp_1.y > mp_2.y) return true;
+    if(mp_1.x >= mp_2.x && mp_1.y < mp_2.y) return false;
+    return false;
+}*/
 
 class Node
 {
@@ -32,24 +57,29 @@ class Node
     mPos pos;
     int power;
     int nb_bridge;
-    mPos v_up, v_down, v_left, v_right; // index des voisins -1 si pas de voisins
+    int v_up, v_down, v_left, v_right; // index des voisins -1,-1 si pas de voisins
+
 
 
     public:
+    Node(){int mpnul=-1;v_up=mpnul;v_down=mpnul;v_left=mpnul;v_right=mpnul;};
+
     mPos get_pos(){return pos;}
+    void set_pos(mPos p){pos=p;}
+
     void set_power(int _power){power=_power;}
     int get_power(){return power;}
     
-    mPos get_v_up(){return v_up;}
-    mPos get_v_down(){return v_down;}
-    mPos get_v_left(){return v_left;}
-    mPos get_v_right(){return v_right;}
+    int get_v_up(){return v_up;}
+    int get_v_down(){return v_down;}
+    int get_v_left(){return v_left;}
+    int get_v_right(){return v_right;}
     
     
-    void set_v_up(mPos _v_up){v_up=_v_up;}
-    void set_v_down(mPos _v_down){v_down=_v_down;}
-    void set_v_left(mPos _v_left){v_left=_v_left;}
-    void set_v_right(mPos _v_rigth){v_right=v_right;}
+    void set_v_up(int _v_up){v_up=_v_up;}
+    void set_v_down(int _v_down){v_down=_v_down;}
+    void set_v_left(int _v_left){v_left=_v_left;}
+    void set_v_right(int _v_right){v_right=_v_right;}
     
     
 };
@@ -57,26 +87,42 @@ class Node
 class grid
 {
 //vector<Node> all_nodes; // todo, a changer, associer une position ?
-map<mPos,Node> all_nodes;
+vector<Node> all_nodes;
 map<int,int> bridge_map;
 
 public:
 
 grid(gridMatr gm);
 
-map<mPos,Node>* nodes_ptr(){return &all_nodes;}
+vector<Node>* nodes_ptr(){return &all_nodes;}
 
 };
 
-void print_nodes(map<mPos,Node>* node_map,ofstream& stream_sortie)
+void print_nodes(vector<Node>* all_nodes,ofstream& stream_sortie)
 {
-for(auto it=node_map->begin();it==node_map->end();it++)
+/*    
+for(auto it=node_map->begin();it!=node_map->end();it++)
 {
-    stream_sortie << it->first.x <<' ' << it->first.x << endl;
-    stream_sortie << '\t'<< "up :" << node_map->at(it->second.get_v_up()).get_power();
-    stream_sortie << '\t'<< "left :" << node_map->at(it->second.get_v_left()).get_power();
-    stream_sortie << '\t'<< "right :" << node_map->at(it->second.get_v_right()).get_power();
-    stream_sortie << '\t'<< "down :" << node_map->at(it->second.get_v_down()).get_power();
+    stream_sortie << it->first.x <<' ' << it->first.y << endl;
+    stream_sortie << '\t'<< "up :" << (*node_map)[it->second.get_v_up()].get_power() << endl;
+    stream_sortie << '\t'<< "left :" << (*node_map)[it->second.get_v_left()].get_power() << endl;
+    stream_sortie << '\t'<< "right :" << (*node_map)[it->second.get_v_right()].get_power() << endl;
+    stream_sortie << '\t'<< "down :" << (*node_map)[it->second.get_v_down()].get_power() << endl;
+    stream_sortie <<endl <<endl;
+}*/
+for(auto el: *all_nodes)
+{
+    // cout<<"printing nodes"<<endl;
+    // cout<<"taille all_nodes"<< all_nodes->size()<<endl;
+    stream_sortie << el.get_pos().x <<' ' << el.get_pos().y <<' '<<el.get_power()<< endl;   
+    if(el.get_v_up()!=-1)
+    stream_sortie << '\t'<< "up :" << all_nodes->at(el.get_v_up()).get_power() << endl;
+    if(el.get_v_left()!=-1)
+    stream_sortie << '\t'<< "left :" << all_nodes->at(el.get_v_left()).get_power() << endl;
+    if(el.get_v_right()!=-1)
+    stream_sortie << '\t'<< "right :" << all_nodes->at(el.get_v_right()).get_power() << endl;
+    if(el.get_v_down()!=-1)
+    stream_sortie << '\t'<< "down :" << all_nodes->at(el.get_v_down()).get_power() << endl;
     stream_sortie <<endl <<endl;
 }
 };
@@ -85,69 +131,93 @@ grid::grid(gridMatr gm)
 {
  // liste des nodes   
  // todo associer une position au nodes
+     int N_col=gm.at(0).size(); cout<<gm.at(0)<<" N_col:" <<N_col<<endl;
+     int N_ligne=gm.size();cout<<"N_ligne"<<N_ligne<<endl;
+
+
     int cpt_ligne=0;
     for(auto ligne:gm)
     {
-        cpt_ligne++;
+        //cout<<"cpt_ligne: "<<cpt_ligne<<endl;
         int cpt_col=0;
         for(auto col:ligne){
-            cpt_col++;
+            
             if(col!='.'){
                 Node new_node;
                 string col_s;
                 col_s=col;
                 int power=std::stoi(col_s);
                 new_node.set_power(power);             
-                mPos pos(cpt_ligne,cpt_col);
-                all_nodes[pos]=new_node;
+                mPos pos(cpt_col,cpt_ligne);
+                new_node.set_pos(pos);
+                all_nodes.push_back(new_node);
+                
                 }
-            }
-    }
-
- // parcourir la liste des nodes pour attribuer les voisins  left et right 
-cpt_ligne=0;
- for(auto ligne:gm)
-    {
-        cpt_ligne++;
-        bool first_node=true;
-        int cpt_col=0;
-        for(auto col:ligne){
             cpt_col++;
-            mPos pos(cpt_ligne,cpt_col);
-            Node stock_node;
-            if(col!='.'){
-                stock_node=all_nodes[pos];
-                if(first_node) {first_node=false;}
-                else{
-                    all_nodes[pos].set_v_left(stock_node.get_pos());
-                    stock_node.set_v_right(pos);
-                }
-                }
             }
+    cpt_ligne++;
     }
 
- // parcourir la liste des nodes pour attribuer les voisins  up  et down 
-int cpt_colonne=0;
- for(auto colonne:gm)
-    {
-        cpt_colonne++;
+ // parcourir les nodes pour attribuer les voisins  left et right 
+
+int cpt_node=0;
+ for(size_t i=0;i<N_ligne;i++)
+    { 
         bool first_node=true;
-        int cpt_li=0;
-        for(auto li:colonne){
-            cpt_li++;
-            mPos pos(cpt_li,cpt_colonne);
-            Node stock_node;
-            if(li!='.'){
-                stock_node=all_nodes[pos];
+        
+        for(int ind_col=0;ind_col<N_col;ind_col++){  
+            
+            
+            if(gm.at(i).at(ind_col)!='.'){
+
+               
+               //cout <<"cpt node :"<<cpt_node<<endl;
+
                 if(first_node) {first_node=false;}
                 else{
-                    all_nodes[pos].set_v_up(stock_node.get_pos());
-                    stock_node.set_v_down(pos);
+                   // cout <<"cpt node :"<<cpt_node<<endl;
+                    all_nodes.at(cpt_node).set_v_left(cpt_node-1);
+                    all_nodes.at(cpt_node-1).set_v_right(cpt_node);
                 }
+                 cpt_node++;    
                 }
             }
     }
+cout<<"passe ici"<<endl;
+ // parcourir la liste des nodes pour attribuer les voisins  up  et down 
 
+ for(int col=0;col<N_col;col++) // pas optimal
+    { 
+        //creaction d'un vect col contenant les indices des nodes
+        vector<int> vect_col{};
+        for(int k=0; k<all_nodes.size();k++){if(all_nodes.at(k).get_pos().x==col){vect_col.push_back(k);}}
+        //cout<<"vect_col.size()"<<vect_col.size()<<endl;
+
+        for(int l=1; l<vect_col.size();l++){
+            
+            all_nodes.at(vect_col.at(l)).set_v_up(vect_col.at(l-1));
+            all_nodes.at(vect_col.at(l-1)).set_v_down(vect_col.at(l));
+
+        }
+
+        /*bool first_node=true;
+        int cpt=0;
+        for(int ind_li=0;ind_li<N_ligne;ind_li++){  
+            
+            
+            if(gm.at(ind_li).at(col)!='.'){
+
+
+                if(first_node) {first_node=false;}
+                else{
+                    all_nodes.at(vect_col.at(cpt)).set_v_up(vect_col.at(cpt-1));
+                    all_nodes.at(vect_col.at(cpt-1)).set_v_down(vect_col.at(cpt));
+                }
+                cpt++;
+                }
+            }*/
+    }
+cout<<"pass la "<<endl;
 }
 
 
@@ -195,7 +265,7 @@ int main(int argc, char * argv[])
 
 
     // Two coordinates and one integer: a node, one of its neighbors, the number of links connecting them.
-    cout << "rien pour l'instant" << endl;
+    cout << "rien pour l'instant " << endl;
 
     return 0;
 }
