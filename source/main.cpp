@@ -30,7 +30,15 @@ mPos(int _x, int _y) : x{_x},y{_y}{};
 //bool pos_compare(const mPos&,const mPos&){};
 };
 
+int max(int a, int b){
+    if(a>b)return a;
+    if(b>a)return b;
+    return -1;}
 
+int min(int a, int b){
+    if(a>b)return b;
+    if(b>a)return a;
+    return -1;}
 
 
 struct cmp_pos{
@@ -43,14 +51,11 @@ struct cmp_pos{
     }
 };
 
-/*bool mPos::pos_compare(const mPos& mp_1, const mPos& mp_2)
+int coord_pict(int coord_non_pict)
 {
-    if(mp_1.x <= mp_2.x && mp_1.y < mp_2.y) return true;
-    if(mp_1.x >= mp_2.x && mp_1.y > mp_2.y) return false;
-    if(mp_1.x <= mp_2.x && mp_1.y > mp_2.y) return true;
-    if(mp_1.x >= mp_2.x && mp_1.y < mp_2.y) return false;
-    return false;
-}*/
+    int c_pict=2*coord_non_pict;
+    return c_pict;
+}
 
 class Node
 {
@@ -131,8 +136,7 @@ void print_nodes(vector<Node>* all_nodes,ofstream& stream_sortie)
 
 for(auto el: *all_nodes)
 {
-    // cout<<"printing nodes"<<endl;
-    // cout<<"taille all_nodes"<< all_nodes->size()<<endl;
+    
     stream_sortie << el.get_pos().x <<' ' << el.get_pos().y <<' '<<el.get_power()<< endl;   
     if(el.get_v_up()!=-1)
     stream_sortie << '\t'<< "up :" << all_nodes->at(el.get_v_up()).get_power() << endl;
@@ -223,15 +227,21 @@ cout<<"passe ici"<<endl;
     }
 
 //remplir grid picture 
+
+
 for(int l=0;l<N_ligne;l++)
 {
     string ligne_gpicture;
+    string ligne_point;
     for(int c=0;c<N_col;c++)
     {
         ligne_gpicture+=gm.at(l).at(c);
         ligne_gpicture+='.';
+        ligne_point+="..";
     }
     grid_picture.push_back(ligne_gpicture);
+    grid_picture.push_back(ligne_point);
+   
 }
 
 
@@ -245,6 +255,42 @@ bridge_map.insert({b,a});// utile?
 Bridge new_bridge(&all_nodes.at(a),&all_nodes.at(b));
 bridge_list.push_back(new_bridge);
 
+int x_a=all_nodes.at(a).get_pos().x; cout<<"x_a "<<x_a<<endl;
+int y_a=all_nodes.at(a).get_pos().y;
+int x_b=all_nodes.at(b).get_pos().x; cout<<"x_b "<<x_b<<endl;
+int y_b=all_nodes.at(b).get_pos().y;
+
+int x_a_p=coord_pict(x_a);cout<<"x_a_p "<<x_a_p<<endl;
+int x_b_p=coord_pict(x_b);cout<<"x_b_p "<<x_a_p<<endl;
+int y_a_p=coord_pict(y_a);cout<<"y_a_p "<<x_a_p<<endl;
+int y_b_p=coord_pict(y_b);cout<<"y_b_p "<<x_a_p<<endl;
+
+
+
+if(x_a!=x_b && y_a!=y_b){cout<<"erreur pont"<<endl;}
+else{
+if(y_a==y_b){
+
+cout<<"min(x_a_p,x_b_p) "<<min(x_a_p,x_b_p)<<"max(x_a_p,x_b_p) "<<max(x_a_p,x_b_p)<<endl;
+for (int i= min(x_a_p,x_b_p)+1;i<max(x_a_p,x_b_p);i++)
+{    
+    cout<<"i = "<<i<<endl;
+    grid_picture.at(y_a_p).at(i)='-';
+    //grid_picture.at(i).at(y_a_p)='-';
+}
+
+}
+
+if(x_a==x_b){
+cout<<"min(y_a_p,y_b_p) "<<min(y_a_p,y_b_p)<<"max(y_a_p,y_b_p) "<<max(y_a_p,y_b_p)<<endl;
+for (int i= min(y_a_p,y_b_p)+1;i<max(y_a_p,y_b_p);i++)
+{
+    grid_picture.at(i).at(x_a_p)='|';
+    //grid_picture.at(x_a_p).at(i)='|';
+}
+
+}
+}
 return true;//prov
 
 
@@ -291,6 +337,13 @@ int main(int argc, char * argv[])
     cout<<endl;
     cout<<"matrice picture"<<endl;
      for(auto el: grid_1.get_gpicture()) cout <<el<< endl;
+
+    grid_1.make_bridge(2,6);
+    grid_1.make_bridge(0,1);
+
+    cout<<"matrice picture apres creation de deux ponts"<<endl;
+    for(auto el: grid_1.get_gpicture()) cout <<el<< endl;
+
 
 
     print_nodes(grid_1.nodes_ptr(),of_str_check_nodes);
