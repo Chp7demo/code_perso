@@ -100,9 +100,11 @@ int power=0; //  1 ou 2 ponts
 public:
 
 Bridge(Node* node_1,Node* node_2) : ptr_node1{node_1},ptr_node2{node_2}{
+    
 ptr_node1->set_power((ptr_node1->get_power())-1);
 ptr_node2->set_power((ptr_node2->get_power())-1);
 power++;
+
 };
 
 int get_power(){return power;}
@@ -116,20 +118,38 @@ class grid
 {
 //vector<Node> all_nodes; // todo, a changer, associer une position ?
 vector<Node> all_nodes;
-map<int,int> bridge_map;
+vector<vector<int>> bridge_matr;//matrice ind node- ind node avec l'indice du bridge ds la liste ou -1;  
 gridMatr grid_picture;
-list<Bridge> bridge_list;
+vector<Bridge> bridge_list;
 
 public:
 
 grid(gridMatr gm);
 gridMatr get_gpicture(){return grid_picture;} // penser à allerger, avec string_view par exemple
+void ajouner_picture();
+
 bool make_bridge(int, int);
 vector<Node>* nodes_ptr(){return &all_nodes;}
 
 };
 
-
+void grid::ajouner_picture()
+{
+    int cpt_node=0;
+    int cpt_li=0;
+    for(auto el:grid_picture){ // colonne (un string ligne)
+        int cpt_col=0;
+       for(auto lettre:el){
+        if(lettre!='.' && lettre != '|' && lettre != '-'){
+            char ch='0'+(all_nodes.at(cpt_node).get_power());
+            grid_picture.at(cpt_li).at(cpt_col)=ch;
+            cpt_node++;
+        }
+        cpt_col++;
+       }
+       cpt_li++;
+    }
+}
 
 void print_nodes(vector<Node>* all_nodes,ofstream& stream_sortie)
 {
@@ -244,16 +264,40 @@ for(int l=0;l<N_ligne;l++)
    
 }
 
+//mise a zero (-1) de la matrice des ponts
+
+for(int i=0;i<all_nodes.size();i++){
+    vector<int> vect_ligne;
+    for(int j=0;j<all_nodes.size();j++){
+        vect_ligne.push_back(-1);
+    }
+    bridge_matr.push_back(vect_ligne);
+}
 
 }
 
 bool grid::make_bridge(int a,int b){
 
-//todo//ici verifier qu'il n'y pas de pont sur le passage
-bridge_map.insert({a,b});// utile?
-bridge_map.insert({b,a});// utile?
+if(bridge_matr.at(a).at(b) != -1)
+{
+if(bridge_list.at(bridge_matr.at(a).at(b)).get_power()>=2)
+{
+cout << "le pont est déjà un double pont" <<endl;    
+return false;
+}
+if(bridge_list.at(bridge_matr.at(a).at(b)).get_power()==1)
+{
+bridge_list.at(bridge_matr.at(a).at(b)).set_power(2);
+all_nodes.at(a).set_power((all_nodes.at(a).get_power())-1);
+all_nodes.at(b).set_power((all_nodes.at(b).get_power())-1);
+}
+}
+else{
 Bridge new_bridge(&all_nodes.at(a),&all_nodes.at(b));
 bridge_list.push_back(new_bridge);
+bridge_matr.at(a).at(b)= bridge_list.size();//indice dernier element
+bridge_matr.at(a).at(b)= bridge_list.size();// "
+}
 
 int x_a=all_nodes.at(a).get_pos().x; cout<<"x_a "<<x_a<<endl;
 int y_a=all_nodes.at(a).get_pos().y;
@@ -344,7 +388,23 @@ int main(int argc, char * argv[])
     cout<<"matrice picture apres creation de deux ponts"<<endl;
     for(auto el: grid_1.get_gpicture()) cout <<el<< endl;
 
+    grid_1.ajouner_picture();
+     cout<<"matrice picture apres ajournement"<<endl;
+    for(auto el: grid_1.get_gpicture()) cout <<el<< endl;
 
+    grid_1.make_bridge(2,6);
+    grid_1.make_bridge(0,1);
+
+     cout<<"matrice picture apres creation de deux ponts doubles"<<endl;
+    for(auto el: grid_1.get_gpicture()) cout <<el<< endl;
+
+    grid_1.ajouner_picture();
+     cout<<"matrice picture apres ajournement"<<endl;
+    for(auto el: grid_1.get_gpicture()) cout <<el<< endl;
+
+    cout << "tentative de faire un pont d'ordre 3" <<endl;
+    grid_1.make_bridge(2,6);
+    grid_1.make_bridge(0,1);
 
     print_nodes(grid_1.nodes_ptr(),of_str_check_nodes);
 
