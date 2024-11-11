@@ -294,9 +294,10 @@ all_nodes.at(b).set_power((all_nodes.at(b).get_power())-1);
 }
 else{
 Bridge new_bridge(&all_nodes.at(a),&all_nodes.at(b));
+new_bridge.set_power(1);
 bridge_list.push_back(new_bridge);
-bridge_matr.at(a).at(b)= bridge_list.size();//indice dernier element
-bridge_matr.at(a).at(b)= bridge_list.size();// "
+bridge_matr.at(a).at(b)= bridge_list.size()-1;//indice dernier element
+bridge_matr.at(b).at(a)= bridge_list.size()-1;// "
 }
 
 int x_a=all_nodes.at(a).get_pos().x; cout<<"x_a "<<x_a<<endl;
@@ -340,9 +341,6 @@ return true;//prov
 
 }
 
-// ligne test github 
-
-
 
 int main(int argc, char * argv[])
 {
@@ -378,15 +376,16 @@ int main(int argc, char * argv[])
     ofstream of_str_check_nodes;
     of_str_check_nodes.open("fichier_check_nodes");
 
-
+    //->
     grid grid_1(gm);
 
     cout<<endl;
     cout<<"matrice picture"<<endl;
      for(auto el: grid_1.get_gpicture()) cout <<el<< endl;
 
-    grid_1.make_bridge(2,6);
-    grid_1.make_bridge(0,1);
+    if(grid_1.make_bridge(2,6)){std::cout<<"pont crée"<<endl;}
+    if(grid_1.make_bridge(0,1)){std::cout<<"pont crée"<<endl;}
+    if(grid_1.make_bridge(7,13)){std::cout<<"pont crée"<<endl;}
 
     cout<<"matrice picture apres creation de deux ponts"<<endl;
     for(auto el: grid_1.get_gpicture()) cout <<el<< endl;
@@ -395,8 +394,9 @@ int main(int argc, char * argv[])
      cout<<"matrice picture apres ajournement"<<endl;
     for(auto el: grid_1.get_gpicture()) cout <<el<< endl;
 
-    grid_1.make_bridge(2,6);
-    grid_1.make_bridge(0,1);
+    if(grid_1.make_bridge(2,6)){std::cout<<"pont double crée"<<endl;}
+    if(grid_1.make_bridge(7,13)){std::cout<<"pont double crée"<<endl;}
+    //if(grid_1.make_bridge(0,1)){std::cout<<"pont double crée"<<endl;}
 
      cout<<"matrice picture apres creation de deux ponts doubles"<<endl;
     for(auto el: grid_1.get_gpicture()) cout <<el<< endl;
